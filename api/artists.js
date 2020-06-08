@@ -50,45 +50,35 @@ artistsRouter.post('/', (req, res, next) => {
 
     if (!name || !dateOfBirth || !biography) {
         res.sendStatus(400);
-    }
-    
-
-    db.run(
-        `INSERT INTO Artist (
-            name,
-            date_of_birth,
-            biography,
-            is_currently_employed
-        )
-        VALUES (
-            $name,
-            $dateOfBirth,
-            $biography,
-            $isCurrentlyEmployed
-        )`,
-        {
-            $name: name,
-            $dateOfBirth: dateOfBirth,
-            $biography: biography,
-            $isCurrentlyEmployed: isCurrentlyEmployed
-        },
-        function(error) {
-            if (error) {
-                next(error);
-            }
-            db.get(
-                `SELECT * FROM Artist
-                WHERE id = ${this.lastID}`,
-                (error, row) => {
-                    if (error) {
-                        next(error);
-                    } else {
-                        res.status(201).json({artist: row});
-                    }
+    } else {
+        db.run(
+            `INSERT INTO Artist (name, date_of_birth, biography, is_currently_employed)
+            VALUES ($name, $dateOfBirth, $biography, $isCurrentlyEmployed)`,
+            {
+                $name: name,
+                $dateOfBirth: dateOfBirth,
+                $biography: biography,
+                $isCurrentlyEmployed: isCurrentlyEmployed
+            },
+            function(error) {
+                if (error) {
+                    next(error);
+                } else {
+                    db.get(
+                        `SELECT * FROM Artist
+                        WHERE id = ${this.lastID}`,
+                        (error, row) => {
+                            if (error) {
+                                next(error);
+                            } else {
+                                res.status(201).json({artist: row});
+                            }
+                        }
+                    );
                 }
-            )
-        }
-    );
+            }
+        );
+    }
 });
 
 artistsRouter.put('/:artistId', (req, res, next) => {
@@ -99,36 +89,36 @@ artistsRouter.put('/:artistId', (req, res, next) => {
 
     if (!name || !dateOfBirth || !biography) {
         res.sendStatus(400);
-    }
-
-    db.run(
-        `UPDATE Artist
-        SET name = $name,
-        date_of_birth = $dateOfBirth,
-        biography = $biography,
-        is_currently_employed = $isCurrentlyEmployed
-        WHERE Artist.id = $artistId`,
-        {
-            $name: name,
-            $dateOfBirth: dateOfBirth,
-            $biography: biography,
-            $isCurrentlyEmployed: isCurrentlyEmployed,
-            $artistId: req.params.artistId
-        },
-        (error) => {
-            if (error) {
-                next(error);
-            } else {
-                db.get(
-                    `SELECT * FROM Artist
-                    WHERE Artist.id = ${req.params.artistId}`,
-                    (error, row) => {
-                        res.status(200).json({artist: row});
-                    }
-                );
+    } else {
+        db.run(
+            `UPDATE Artist
+            SET name = $name,
+            date_of_birth = $dateOfBirth,
+            biography = $biography,
+            is_currently_employed = $isCurrentlyEmployed
+            WHERE Artist.id = $artistId`,
+            {
+                $name: name,
+                $dateOfBirth: dateOfBirth,
+                $biography: biography,
+                $isCurrentlyEmployed: isCurrentlyEmployed,
+                $artistId: req.params.artistId
+            },
+            (error) => {
+                if (error) {
+                    next(error);
+                } else {
+                    db.get(
+                        `SELECT * FROM Artist
+                        WHERE Artist.id = ${req.params.artistId}`,
+                        (error, row) => {
+                            res.status(200).json({artist: row});
+                        }
+                    );
+                }
             }
-        }
-    );
+        );
+    }
 });
 
 artistsRouter.delete('/:artistId', (req, res, next) => {
@@ -149,8 +139,7 @@ artistsRouter.delete('/:artistId', (req, res, next) => {
                 )
             }
         }
-        
-    )
+    );
 });
 
 module.exports = artistsRouter;
