@@ -46,12 +46,12 @@ artistsRouter.post('/', (req, res, next) => {
     const name = req.body.artist.name;
     const dateOfBirth = req.body.artist.dateOfBirth;
     const biography = req.body.artist.biography;
+    const isCurrentlyEmployed = req.body.artist.isCurrentlyEmployed === 0 ? 0 : 1;
 
     if (!name || !dateOfBirth || !biography) {
         res.sendStatus(400);
     }
     
-    const isCurrentlyEmployed = req.body.artist.isCurrentlyEmployed === 0 ? 0 : 1;
 
     db.run(
         `INSERT INTO Artist (
@@ -89,68 +89,68 @@ artistsRouter.post('/', (req, res, next) => {
             )
         }
     );
+});
 
-    artistsRouter.put('/:artistId', (req, res, next) => {
-        const name = req.body.artist.name;
-        const dateOfBirth = req.body.artist.dateOfBirth;
-        const biography = req.body.artist.biography;
-        const isCurrentlyEmployed = req.body.artist.isCurrentlyEmployed;
+artistsRouter.put('/:artistId', (req, res, next) => {
+    const name = req.body.artist.name;
+    const dateOfBirth = req.body.artist.dateOfBirth;
+    const biography = req.body.artist.biography;
+    const isCurrentlyEmployed = req.body.artist.isCurrentlyEmployed === 0 ? 0 : 1;
 
-        if (!name || !dateOfBirth || !biography || !isCurrentlyEmployed) {
-            res.sendStatus(400);
+    if (!name || !dateOfBirth || !biography) {
+        res.sendStatus(400);
+    }
+
+    db.run(
+        `UPDATE Artist
+        SET name = $name,
+        date_of_birth = $dateOfBirth,
+        biography = $biography,
+        is_currently_employed = $isCurrentlyEmployed
+        WHERE Artist.id = $artistId`,
+        {
+            $name: name,
+            $dateOfBirth: dateOfBirth,
+            $biography: biography,
+            $isCurrentlyEmployed: isCurrentlyEmployed,
+            $artistId: req.params.artistId
+        },
+        (error) => {
+            if (error) {
+                next(error);
+            } else {
+                db.get(
+                    `SELECT * FROM Artist
+                    WHERE Artist.id = ${req.params.artistId}`,
+                    (error, row) => {
+                        res.status(200).json({artist: row});
+                    }
+                );
+            }
         }
+    );
+});
 
-        db.run(
-            `UPDATE Artist
-            SET name = $name,
-            date_of_birth = $dateOfBirth,
-            biography = $biography,
-            is_currently_employed = $isCurrentlyEmployed
-            WHERE Artist.id = $artistId`,
-            {
-                $name: name,
-                $dateOfBirth: dateOfBirth,
-                $biography: biography,
-                $isCurrentlyEmployed: isCurrentlyEmployed,
-                $artistId: req.params.artistId
-            },
-            (error) => {
-                if (error) {
-                    next(error);
-                } else {
-                    db.get(
-                        `SELECT * FROM Artist
-                        WHERE Artist.id = ${req.params.artistId}`,
-                        (error, row) => {
-                            res.json({artist: row});
-                        }
-                    )
-                }
+artistsRouter.delete('/:artistId', (req, res, next) => {
+    db.run(
+        `UPDATE Artist
+        SET is_currently_employed = 0
+        WHERE Artist.id = ${req.params.artistId}`,
+        (error) => {
+            if (error) {
+                next(error);
+            } else {
+                db.get(
+                    `SELECT * FROM Artist
+                    WHERE Artist.id = ${req.params.artistId}`,
+                    (error, row) => {
+                        res.json({artist: row});
+                    }
+                )
             }
-        );
-    });
-
-    artistsRouter.delete('/:artistId', (req, res, next) => {
-        db.run(
-            `UPDATE Artist
-            SET is_currently_employed = 0
-            WHERE Artist.id = ${req.params.artistId}`,
-            (error) => {
-                if (error) {
-                    next(error);
-                } else {
-                    db.get(
-                        `SELECT * FROM Artist
-                        WHERE Artist.id = ${req.params.artistId}`,
-                        (error, row) => {
-                            res.json({artist: row});
-                        }
-                    )
-                }
-            }
-            
-        )
-    })
-})
+        }
+        
+    )
+});
 
 module.exports = artistsRouter;
