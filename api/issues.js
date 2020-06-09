@@ -146,7 +146,7 @@ issuesRouter.put('/:issueId', (req, res, next) => {
 
 issuesRouter.delete('/:issueId', (req, res, next) => {
     db.run(
-        `DELETE FROM Issue WHERE Issue.id = ${req.params.id}`,
+        `DELETE FROM Issue WHERE Issue.id = ${req.params.issueId}`,
         (error) => {
             if (error) {
                 next(error);
