@@ -106,32 +106,32 @@ issuesRouter.put('/:issueId', (req, res, next) => {
                     res.sendStatus(400);
                 } else {
                     db.run(
-                        'UPDATE Issue ' +
-                        'SET name = $name, ' +
-                        'issue_number = $issueNumber, ' +
-                        'publication_date = $publicationDate, ' +
-                        'artist_id = $artistId, ' +
-                        'series_id = $seriesId ' +
-                        'WHERE Issue.id = $issueId',
+                        `UPDATE Issue 
+                        SET name = $name,
+                        issue_number = $issueNumber,
+                        publication_date = $publicationDate,
+                        artist_id = $artistId,
+                        series_id = $seriesId
+                        WHERE Issue.id = $issueId`,
                         {
                             $name: name,
                             $issueNumber: issueNumber,
                             $publicationDate: publicationDate,
                             $artistId: artistId,
                             $seriesId: seriesId,
-                            $issueId: req.params.$issueId
+                            $issueId: req.params.issueId
                         },
                         function (error) {
                             if (error) {
                                 next(error);
                             } else {
                                 db.get(
-                                    `SELECT * FROM Issue WHERE Issue.id = ${req.params.$issueId}`,
+                                    `SELECT * FROM Issue WHERE Issue.id = ${req.params.issueId}`,
                                     (error, row) => {
                                         if (error) {
                                             next(error);
                                         } else {
-                                            res.json({issue: row});
+                                            res.status(200).json({issue: row});
                                         }
                                     }
                                 );
