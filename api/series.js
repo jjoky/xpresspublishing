@@ -9,8 +9,7 @@ const db = new sqlite3.Database(
 
 seriesRouter.param('seriesId', (req, res, next, seriesId) => {
     db.get(
-        `SELECT * FROM Series
-        WHERE Series.id = ${seriesId}`,
+        `SELECT * FROM Series WHERE Series.id = ${seriesId}`,
         (error, row) => {
             if (error) {
                 next(error);
@@ -51,8 +50,7 @@ seriesRouter.post('/', (req, res, next) => {
         res.sendStatus(400);
     } else {
         db.run(
-            `INSERT INTO Series (name, description)
-            VALUES ($name, $description)`,
+            `INSERT INTO Series (name, description) VALUES ($name, $description)`,
             {
                 $name: name,
                 $description: description
@@ -62,8 +60,7 @@ seriesRouter.post('/', (req, res, next) => {
                     next(error);
                 } else {
                     db.get(
-                        `SELECT * FROM Series
-                        WHERE Series.id = ${this.lastID}`,
+                        `SELECT * FROM Series WHERE Series.id = ${this.lastID}`,
                         (error, row) => {
                             if (error) {
                                 next(error);
@@ -86,10 +83,7 @@ seriesRouter.put('/:seriesId', (req, res, next) => {
         res.sendStatus(400);
     } else {
         db.run(
-            `UPDATE Series
-            SET name = $name,
-            description = $description
-            WHERE id = $id`,
+            `UPDATE Series SET name = $name, description = $description WHERE Series.id = $id`,
             {
                 $name: name,
                 $description: description,
@@ -100,13 +94,12 @@ seriesRouter.put('/:seriesId', (req, res, next) => {
                     next(error);
                 } else {
                     db.get(
-                        `SELECT * FROM Series
-                        WHERE Series.id = ${req.params.seriesId}`,
+                        `SELECT * FROM Series WHERE Series.id = ${req.params.seriesId}`,
                         (error, row) => {
                             if (error) {
                                 next(error);
                             } else {
-                                res.send({series: row});
+                                res.status(200).json({series: row});
                             }
                         }
                     );
@@ -117,12 +110,12 @@ seriesRouter.put('/:seriesId', (req, res, next) => {
 });
 
 seriesRouter.delete('/:seriesId', (req, res, next) => {
-    db.all(
+    db.get(
         `SELECT * FROM Issue WHERE Issue.series_id = ${req.params.seriesId}`,
-        (error, rows) => {
+        (error, row) => {
             if (error) {
                 next(error);
-            } else if (rows) {
+            } else if (row) {
                 res.sendStatus(400);
             } else {
                 db.run(
